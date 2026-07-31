@@ -1,4 +1,4 @@
-"""
+  """
 Equity Nexus - Main Workflow
 =============================
 Multi-Agent Investment Research System
@@ -18,6 +18,19 @@ Workflow:
 
 To run: python3 main.py
 """
+
+import agenthog
+
+# --------------------------------------------------------------------------
+# IMPORTANT: Replace the two values below with YOUR real credentials.
+# Get your API key from: app.theagentos.space -> Settings -> API Keys
+# Get your Workspace ID from the SAME page (Settings -> API Keys) --
+# do NOT use a workspace ID copied from a generic docs/quickstart example.
+# --------------------------------------------------------------------------
+agenthog.init(
+    api_key="agops_3VlAtt8-yxOfMOA0h9SgA1PpUUYr_N0E",
+    workspace_id="3153d277-1857-44fc-b3a8-a882e83f8493",
+)
 
 # ------------------------------------------------------------------
 # Import the three agents
@@ -193,35 +206,41 @@ def main():
     print(f"  >> Analyzing {company_name} ({ticker})...")
     print()
 
-    # ------------------------------------------------------------------
-    # STEP 2: Run MarketSentimentAgent
-    # ------------------------------------------------------------------
-    print("  STEP 2: Running MarketSentimentAgent...")
-    sentiment_agent = MarketSentimentAgent()
-    sentiment_report = sentiment_agent.analyze(company_name, ticker)
+    with agenthog.start_task_run(task_run_id="equity_nexus_research") as run:
+        # ------------------------------------------------------------------
+        # STEP 2: Run MarketSentimentAgent
+        # ------------------------------------------------------------------
+        print("  STEP 2: Running MarketSentimentAgent...")
+        sentiment_agent = MarketSentimentAgent()
+        sentiment_report = sentiment_agent.analyze(company_name, ticker)
 
-    # Display the sentiment report
-    display_sentiment_report(sentiment_report)
+        # Display the sentiment report
+        display_sentiment_report(sentiment_report)
 
-    # ------------------------------------------------------------------
-    # STEP 3: Run FundamentalAnalysisAgent
-    # ------------------------------------------------------------------
-    print("  STEP 3: Running FundamentalAnalysisAgent...")
-    fundamental_agent = FundamentalAnalysisAgent()
-    financial_report = fundamental_agent.analyze(company_name, ticker)
+        # ------------------------------------------------------------------
+        # STEP 3: Run FundamentalAnalysisAgent
+        # ------------------------------------------------------------------
+        print("  STEP 3: Running FundamentalAnalysisAgent...")
+        fundamental_agent = FundamentalAnalysisAgent()
+        financial_report = fundamental_agent.analyze(company_name, ticker)
 
-    # Display the financial report
-    display_financial_report(financial_report)
+        # Display the financial report
+        display_financial_report(financial_report)
 
-    # ------------------------------------------------------------------
-    # STEP 4: Run InvestmentDecisionAgent
-    # ------------------------------------------------------------------
-    print("  STEP 4: Running InvestmentDecisionAgent...")
-    decision_agent = InvestmentDecisionAgent()
-    investment_decision = decision_agent.analyze(sentiment_report, financial_report)
+        # ------------------------------------------------------------------
+        # STEP 4: Run InvestmentDecisionAgent
+        # ------------------------------------------------------------------
+        print("  STEP 4: Running InvestmentDecisionAgent...")
+        decision_agent = InvestmentDecisionAgent()
+        investment_decision = decision_agent.analyze(sentiment_report, financial_report)
 
-    # Display the final recommendation
-    display_investment_decision(investment_decision)
+        # Display the final recommendation
+        display_investment_decision(investment_decision)
+
+    # Block here until AgentOS confirms the trace has actually been sent.
+    print("  Sending trace data to AgentOS, please wait...")
+    agenthog.shutdown()
+    print("  Trace sent. Check the Traces page on app.theagentos.space.")
 
 
 # ------------------------------------------------------------------
@@ -229,3 +248,4 @@ def main():
 # ------------------------------------------------------------------
 if __name__ == "__main__":
     main()
+    
